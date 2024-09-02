@@ -14,8 +14,7 @@ public class RestTest {
 
 
     @Test
-    public void testPost() {
-
+    public void testGet() {
         Specifications.installSpecification(Specifications.requestSpecification("https://qualit.appline.ru"), Specifications.responseSpecification(200));
 
         RestAssured.defaultParser = Parser.JSON;
@@ -27,15 +26,23 @@ public class RestTest {
                 .then().log().all()
                 .statusCode(200)
                 .extract().body().jsonPath().getList("ProductPojo", ProductPojo.class);
+    }
 
+
+    @Test
+    public void testPost() {
+
+        Specifications.installSpecification(Specifications.requestSpecification("https://qualit.appline.ru"), Specifications.responseSpecification(200));
+
+        RestAssured.defaultParser = Parser.JSON;
 
         Response response = given()
                 .when()
                 .contentType(ContentType.JSON)
                 .body("{\n" +
                         "    \"name\": \"Банан\",\n" +
-                        "    \"type\": \"VEGETABLE\",\n" +
-                        "    \"exotic\": false\n" +
+                        "    \"type\": \"FRUIT\",\n" +
+                        "    \"exotic\": true\n" +
                         "  }")
                 .basePath("/api/food")
                 .when()
@@ -62,5 +69,6 @@ public class RestTest {
         String check = response.getBody().asPrettyString();
         check.contains("Банан");
     }
+
 }
 
