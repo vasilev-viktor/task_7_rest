@@ -2,17 +2,15 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.parsing.Parser;
 import io.restassured.response.Response;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import pojos.ProductPojo;
 
 import java.util.List;
+import java.util.Map;
 
 import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class RestTest {
-
 
 
     @Test
@@ -27,9 +25,11 @@ public class RestTest {
                 .contentType(ContentType.JSON)
                 .get("/api/food")
                 .then().log().all()
+                .statusCode(200)
                 .extract().body().jsonPath().getList("ProductPojo", ProductPojo.class);
 
-        String productPost = given()
+
+        Response response = given()
                 .when()
                 .contentType(ContentType.JSON)
                 .body("{\n" +
@@ -39,11 +39,28 @@ public class RestTest {
                         "  }")
                 .basePath("/api/food")
                 .when()
-                .log().all()
-                .post()
-                .then()
-                .log().all()
-                .extract().body().toString();
+                .post();
+        response.then()
+                .assertThat()
+                .statusCode(200)
+                .log().all();
+        Map<String, String> cookies = response.then()
+                .extract()
+                .cookies();
 
+        given()
+                .cookies(cookies)
+                .when()
+                .get("/api/food");
+
+        response.then()
+                .log().all()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .body();
+        String check = response.getBody().asPrettyString();
+        check.contains("Банан");
     }
 }
+
